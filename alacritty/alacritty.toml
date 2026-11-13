@@ -1,0 +1,46 @@
+
+[window]
+padding = { x = 12, y = 12 }
+opacity = 0.96
+
+[font]
+size = 7.0
+
+[font.normal]
+family = "DejaVuSansMono"
+style = "Regular"
+
+[colors.primary]
+background = '#080808'
+foreground = '#D6D6D6'
+
+[colors.cursor]
+text = '#080808'
+cursor = '#E00000'
+
+[colors.selection]
+text = '#D6D6D6'
+background = '#303030'
+
+[colors.normal]
+black   = '#121212'
+red     = '#B00000'
+green   = '#4E8B54'
+yellow  = '#C6A052'
+blue    = '#4A7A96'
+magenta = '#8C4A96'
+cyan    = '#4A968C'
+white   = '#D6D6D6'
+
+[colors.bright]
+black   = '#404040'
+red     = '#E00000'
+green   = '#62B36B'
+yellow  = '#E6BC65'
+blue    = '#65A3C6'
+magenta = '#B365C6'
+cyan    = '#65C6B8'
+white   = '#FFFFFF'
+
+[terminal.shell]
+program = "/usr/bin/fish"

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+WALL_DIR="$HOME/.config/i3/wallpapers"
+mkdir -p "$WALL_DIR"
+
+# Формируем список: Название + разделитель \x1finfo\x1f + иконка
+LIST=""
+for img in "$WALL_DIR"/*.{jpg,jpeg,png,webp}; do
+    [ -f "$img" ] || continue
+    name=$(basename "$img")
+    LIST="${LIST}${name}\x00icon\x1f${img}\n"
+done
+
+# Передаем список в rofi через printf, чтобы избежать проблем с нулевым байтом в bash
+WALLPAPER=$(printf "$LIST" | rofi -dmenu \
+    -p "WALLPAPERS" \
+    -show-icons \
+    -theme ~/.config/rofi/themes/mrrobot.rasi)
+
+if [ -n "$WALLPAPER" ]; then
+    FULL_PATH="$WALL_DIR/$WALLPAPER"
+    feh --bg-fill "$FULL_PATH"
+
+    echo "feh --bg-fill \"$FULL_PATH\"" > ~/.fehbg
+    chmod +x ~/.fehbg
+    notify-send "FSOCIETY" "Wallpaper updated: $WALLPAPER"
+fi

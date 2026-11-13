@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if [ "$1" != "--window" ]; then
+    alacritty --class "mr_float_term" -e "$0" --window
+    exit 0
+fi
+
+clear
+echo -e "\033[1;31m=== FSOCIETY HOST DISCOVERY ===\033[0m\n"
+
+# Запрашиваем IP подсети (например, 192.168.1)
+read -p "Enter Network Subnet (e.g. 192.168.1): " SUBNET
+
+if [ -z "$SUBNET" ]; then
+    echo "Subnet is empty!"
+    exit 1
+fi
+
+echo -e "\nScanning $SUBNET.1 to $SUBNET.254...\n"
+
+for ip in $(seq 1 254); do
+    # ping -c 1 (1 пакет), -W 1 (ждём 1 сек)
+    ping -c 1 -W 1 "$SUBNET.$ip" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "\033[1;32m[+] Host Alive:\033[0m $SUBNET.$ip"
+    fi
+done
+
+echo -e "\n-----------------------------------"
+read -p "Press Enter to exit..."

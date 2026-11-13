@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# Укажи папки с проектами (можно указать точный путь ~/Project)
+DEV_DIRS="$HOME/Project $HOME/Projects $HOME/dev"
+
+# Ищем папки на 1 уровень вглубь и убираем абсолютный путь для красоты в меню
+PROJECTS=""
+for dir in $DEV_DIRS; do
+    if [ -d "$dir" ]; then
+        found=$(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
+        if [ -n "$found" ]; then
+            PROJECTS="$PROJECTS"$'\n'"$found"
+        fi
+    fi
+done
+
+# Очищаем от пустых строк
+PROJECTS=$(echo "$PROJECTS" | sed '/^$/d')
+
+if [ -z "$PROJECTS" ]; then
+    notify-send "FSOCIETY" "No projects found in specified directories!"
+    exit 1
+fi
+
+# Убираем домашнюю директорию для удобного отображения в Rofi
+DISPLAY_LIST=$(echo "$PROJECTS" | sed "s|$HOME/||")
+
+# Выбираем проект через Rofi
+CHOSEN_DISPLAY=$(echo -e "$DISPLAY_LIST" | rofi -dmenu -p "SELECT PROJECT" -theme ~/.config/rofi/themes/mrrobot.rasi)
+
+[ -z "$CHOSEN_DISPLAY" ] && exit 0
+
+FULL_PATH="$HOME/$CHOSEN_DISPLAY"
+
+# Запускаем Alacritty в папке проекта, активируем .venv если есть и запускаем fish
+alacritty --working-directory "$FULL_PATH" -e bash -c "
+if [ -d '.venv' ]; then
+    source .venv/bin/activate;
+elif [ -d 'venv' ]; then
+    source venv/bin/activate;
+fi;
+exec fish
+"

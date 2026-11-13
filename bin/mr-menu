@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+CHOICE=$(cat <<EOF | rofi -dmenu -p "SYSTEM CONTROL" -theme ~/.config/rofi/themes/mrrobot.rasi
+Lock Screen
+Reload i3 & Polybar
+Reboot System
+Power Off
+Clear Memory Cache
+EOF
+)
+
+case "$CHOICE" in
+    "Lock Screen")
+       $HOME/.local/bin/mr-lock
+        ;;
+    "Reload i3 & Polybar")
+        i3-msg reload && $HOME/.config/polybar/launch.sh
+        ;;
+    "Reboot System")
+        systemctl reboot
+        ;;
+    "Power Off")
+        systemctl poweroff
+        ;;
+    "Clear Memory Cache")
+        sudo sysctl -w vm.drop_caches=3 && notify-send "FSOCIETY" "RAM Cache Cleared"
+        ;;
+esac

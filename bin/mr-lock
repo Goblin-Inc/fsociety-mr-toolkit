@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+IMAGE="/tmp/i3lock.png"
+
+# Делаем скриншот, размываем и затемняем
+maim "$IMAGE"
+convert "$IMAGE" -blur 0x8 -fill black -colorize 40% "$IMAGE"
+
+# Блокируем экран
+i3lock -i "$IMAGE"
+rm "$IMAGE"

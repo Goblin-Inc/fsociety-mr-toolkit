@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""
+MR-MATRIX // Digital Rain Engine
+Atmospheric terminal rain simulation.
+
+Usage:
+  mr-matrix [options]
+
+Options:
+  --fast      High speed rain
+  --slow      Low speed rain
+  --red       Fsociety red color scheme
+  --green     Classic matrix green color scheme (default)
+  --time N    Auto exit after N seconds
+"""
+
+import curses
+import random
+import time
+import sys
+import argparse
+
+def main(stdscr, speed, color_theme, timeout):
+    curses.curs_set(0)
+    stdscr.nodelay(True)
+    stdscr.timeout(50)
+
+    # Инициализация цветов
+    curses.start_color()
+    curses.use_default_colors()
+
+    if color_theme == "red":
+        curses.init_pair(1, curses.COLOR_RED, -1)
+        curses.init_pair(2, curses.COLOR_WHITE, -1)
+    else:
+        curses.init_pair(1, curses.COLOR_GREEN, -1)
+        curses.init_pair(2, curses.COLOR_WHITE, -1)
+
+    height, width = stdscr.getmaxyx()
+    
+    # Катакана, цифры и символы
+    chars = [chr(i) for i in range(0x30a0, 0x30ff)] + list("0123456789ABCDEF@#$%&*")
+
+    columns = [0] * width
+    drops = [-random.randint(0, height) for _ in range(width)]
+
+    start_time = time.time()
+
+    while True:
+        # Проверка выхода по времени
+        if timeout and (time.time() - start_time) >= timeout:
+            break
+
+        # Проверка нажатия клавиш
+        key = stdscr.getch()
+        if key in (ord('q'), ord('Q'), 27): # q, Q или Esc
+            break
+
+        # Динамическое обновление размера при ресайзе
+        new_h, new_w = stdscr.getmaxyx()
+        if new_h != height or new_w != width:
+            height, width = new_h, new_w
+            drops = [-random.randint(0, height) for _ in range(width)]
+            stdscr.clear()
+
+        for x in range(0, width, 2):
+            if drops[x] >= 0 and drops[x] < height:
+                # Голова капли (белый цвет)
+                char = random.choice(chars)
+                try:
+                    stdscr.addstr(drops[x], x, char, curses.color_pair(2) | curses.A_BOLD)
+                except curses.error:
+                    pass
+
+                # След капли
+                if drops[x] - 1 >= 0:
+                    try:
+                        stdscr.addstr(drops[x] - 1, x, random.choice(chars), curses.color_pair(1))
+                    except curses.error:
+                        pass
+
+                # Стирание хвоста
+                tail = drops[x] - random.randint(10, 20)
+                if tail >= 0 and tail < height:
+                    try:
+                        stdscr.addstr(tail, x, " ")
+                    except curses.error:
+                        pass
+
+            drops[x] += 1
+            if drops[x] - 20 >= height:
+                drops[x] = -random.randint(1, 15)
+
+        stdscr.refresh()
+        time.sleep(speed)
+
+def run():
+    parser = argparse.ArgumentParser(description="Terminal Matrix Rain")
+    parser.add_argument("--fast", action="store_true", help="Fast speed")
+    parser.add_argument("--slow", action="store_true", help="Slow speed")
+    parser.add_argument("--red", action="store_true", help="Use Fsociety red palette")
+    parser.add_argument("--time", type=int, default=0, help="Run duration in seconds")
+
+    args = parser.parse_args()
+
+    speed = 0.03
+    if args.fast:
+        speed = 0.01
+    elif args.slow:
+        speed = 0.07
+
+    color = "red" if args.red else "green"
+
+    try:
+        curses.wrapper(main, speed, color, args.time)
+    except KeyboardInterrupt:
+        pass
+
+if __name__ == "__main__":
+    run()

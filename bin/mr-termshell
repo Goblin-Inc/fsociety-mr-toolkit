@@ -1,0 +1,16 @@
+#!/bin/bash
+# Запоминаем текущую директорию, откуда вызвали команду
+CURRENT_DIR="$(pwd)"
+
+# Путь к скомпилированному бинарнику
+EXEC_PATH="$HOME/Project/TE/build/mr-termshell"
+
+if [ -f "$EXEC_PATH" ]; then
+    # Переходим в папку с бинарником, если ему нужны локальные ресурсы для запуска
+    cd "$HOME/Project/TE/build" || exit 1
+    # Запускаем бинарник и передаём ему исходный путь текущей папки
+    ./mr-termshell "$CURRENT_DIR"
+else
+    echo "[-] Ошибка: Бинарник не найден в $EXEC_PATH"
+    echo "[!] Скомпилируй проект через cmake --build build"
+fi

@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+"""
+MR-HELP // Dynamic Documentation Engine
+Centralized help utility for the custom mr- ecosystem.
+"""
+
+import os
+import sys
+import re
+from pathlib import Path
+
+BIN_DIR = Path.home() / ".local" / "bin"
+
+# Категории для авто-группировки
+CATEGORIES = {
+    "SYSTEM": ["mr-fetch", "mr-top", "mr-sysinfo", "mr-audio-restore", "mr-lock"],
+    "FILES": ["mr-project", "mr-notes", "mr-look", "mr-termshell", "mr-clip", "mr-dirbuster"],
+    "NETWORK": ["mr-net", "mr-pinger", "mr-portcheck"],
+    "DESKTOP": ["mr-menu", "mr-mixer", "mr-wallpaper", "mr-shot"],
+    "FUN": ["mr-ascii", "mr-breach", "mr-matrix"]
+}
+
+def extract_doc(script_path):
+    """Извлекает заголовок и справку из docstring или комментариев."""
+    if not script_path.exists():
+        return "Not found", "No usage info"
+
+    try:
+        with open(script_path, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read(2048) # Читаем первые 2Кб
+            
+        # Ищем docstring (""" ... """)
+        docstring_match = re.search(r'"""(.*?)"""', content, re.DOTALL)
+        if docstring_match:
+            doc = docstring_match.group(1).strip().split('\n')
+            short_desc = doc[0].strip()
+            full_doc = "\n".join(line.strip() for line in doc)
+            return short_desc, full_doc
+
+        # Ищем блок комментариев (# Description:)
+        comments = []
+        for line in content.split('\n'):
+            if line.startswith("#"):
+                clean = line.lstrip("#").strip()
+                if clean and not clean.startswith("!"):
+                    comments.append(clean)
+            elif line.strip():
+                break
+                
+        if comments:
+            return comments[0], "\n".join(comments)
+
+    except Exception:
+        pass
+        
+    return "Custom MR tool", "No detailed documentation available."
+
+def show_all():
+    print("\033[1;31mMR TOOLS SYSTEM HELP\033[0m")
+    print("\033[90m──────────────────────────────────────────\033[0m\n")
+
+    listed_scripts = set()
+
+    for cat, scripts in CATEGORIES.items():
+        print(f"\033[1;33m{cat}\033[0m")
+        for script in scripts:
+            script_path = BIN_DIR / script
+            if script_path.exists():
+                listed_scripts.add(script)
+                short_desc, _ = extract_doc(script_path)
+                print(f"  \033[36m{script:<15}\033[0m \033[37m{short_desc}\033[0m")
+        print()
+
+    # Скрипты, не попавшие в категории
+    all_mr_scripts = set(p.name for p in BIN_DIR.glob("mr-*") if os.access(p, os.X_OK))
+    uncategorized = all_mr_scripts - listed_scripts
+    
+    if uncategorized:
+        print("\033[1;33mOTHER\033[0m")
+        for script in sorted(uncategorized):
+            short_desc, _ = extract_doc(BIN_DIR / script)
+            print(f"  \033[36m{script:<15}\033[0m \033[37m{short_desc}\033[0m")
+        print()
+
+    print("\033[90mИспользование: mr-help <имя-скрипта> (например: mr-help mr-notes)\033[0m")
+
+def show_single(target):
+    if not target.startswith("mr-"):
+        target = f"mr-{target}"
+        
+    script_path = BIN_DIR / target
+    if not script_path.exists():
+        print(f"\033[31m[-] Скрипт {target} не найден в {BIN_DIR}\033[0m")
+        return
+
+    short_desc, full_doc = extract_doc(script_path)
+    print(f"\033[1;31m{target}\033[0m")
+    print("\033[90m──────────────────────────────────────────\033[0m")
+    print(f"\033[37m{full_doc}\033[0m\n")
+
+def main():
+    if len(sys.argv) > 1:
+        show_single(sys.argv[1])
+    else:
+        show_all()
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Если скрипт запущен НЕ из Alacritty, перезапускаем его в плавающем окне
+if [ "$1" != "--window" ]; then
+    alacritty --class "mr_float_term" -e "$0" --window
+    exit 0
+fi
+
+RED='\033[0;31m'
+NC='\033[0m'
+BOLD='\033[1m'
+
+clear
+echo -e "${RED}${BOLD}=== SYSTEM DIAGNOSTICS ===${NC}"
+echo -e "${BOLD}OS:${NC} $(lsb_release -d 2>/dev/null | cut -f2 || cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2)"
+echo -e "${BOLD}Kernel:${NC} $(uname -r)"
+echo -e "${BOLD}Uptime:${NC} $(uptime -p)"
+echo -e "\n${RED}${BOLD}=== RESOURCES ===${NC}"
+echo -e "${BOLD}RAM:${NC} $(free -h | awk '/Mem:/ {print $3 "/" $2}')"
+echo -e "${BOLD}SWAP:${NC} $(free -h | awk '/Swap:/ {print $3 "/" $2}')"
+echo -e "${BOLD}Root Disk:${NC} $(df -h / | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}')"
+echo -e "\n${RED}${BOLD}=== NETWORK ===${NC}"
+echo -e "${BOLD}Local IP:${NC} $(hostname -I | awk '{print $1}')"
+echo -e "${BOLD}Public IP:${NC} $(curl -s --max-time 2 https://ifconfig.me || echo 'Offline')"
+echo -e "\n-----------------------------------"
+read -n 1 -s -r -p "Press any key to exit..."

@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+import sys
+import urllib.request
+import os
+
+if len(sys.argv) == 1:
+    os.system('alacritty --class "mr_float_term" -e python3 ' + __file__ + ' --window')
+    sys.exit()
+
+print("\033[1;31m=== FSOCIETY DIR BUSTER ===\033[0m\n")
+
+url = input("Enter Web Target (e.g. http://192.168.1.1): ")
+if not url.startswith("http"):
+    url = "http://" + url
+
+# Базовый словарь для проверки
+wordlist = ["admin", "login", "dashboard", "robots.txt", "config", "backup", "db", "upload"]
+
+print(f"\nScanning {url}...\n")
+
+for word in wordlist:
+    full_url = f"{url.rstrip('/')}/{word}"
+    try:
+        req = urllib.request.Request(full_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=2) as response:
+            if response.status == 200:
+                print(f"\033[1;32m[200 OK] Found:\033[0m {full_url}")
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            print(f"\033[1;33m[403 Forbidden]:\033[0m {full_url}")
+    except Exception:
+        pass
+
+print("\n-----------------------------------")
+input("Press Enter to exit...")

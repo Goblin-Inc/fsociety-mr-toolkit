@@ -1,0 +1,11 @@
+configuration {
+    modi:                       "drun,run,window";
+    show-icons:                 false;
+    font:                       "JetBrains Mono 10";
+    display-drun:               ">";
+    display-run:                "$";
+    display-window:             "#";
+    drun-display-format:        "{name}";
+}
+
+@theme "/home/denegen/.config/rofi/themes/mrrobot.rasi"

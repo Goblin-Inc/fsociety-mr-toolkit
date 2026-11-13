@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Получаем текущую громкость и статус Mute
+VOL=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}')
+IS_MUTED=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q "MUTED" && echo "[MUTED]" || echo "[ON]")
+
+# Формируем меню
+CHOICE=$(cat <<EOF | rofi -dmenu -p "AUDIO ($VOL% $IS_MUTED)" -theme ~/.config/rofi/themes/mrrobot.rasi
++5% Volume Up
+-5% Volume Down
+Toggle Mute
+Set 100%
+Set 50%
+Set 20%
+EOF
+)
+
+case "$CHOICE" in
+    "+5% Volume Up")
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+        ;;
+    "-5% Volume Down")
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+        ;;
+    "Toggle Mute")
+        wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+        ;;
+    "Set 100%")
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 100%
+        ;;
+    "Set 50%")
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 50%
+        ;;
+    "Set 20%")
+        wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%
+        ;;
+esac
+

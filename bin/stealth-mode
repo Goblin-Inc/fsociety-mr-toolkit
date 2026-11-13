@@ -1,0 +1,36 @@
+#!/bin/bash
+
+INTERFACE="wlp2s0"
+
+echo -e "\x1b[38;5;202m[STEALTH] Активация режима призрака...\x1b[0m"
+
+# 1. Проверяем наличие интерфейса
+if ! ip link show "$INTERFACE" > /dev/null 2>&1; then
+    echo -e "\x1b[31m[!] Ошибка: Интерфейс $INTERFACE не найден!\x1b[0m"
+    exit 1
+fi
+
+# 2. Генерируем случайное имя
+NAMES=("Galaxy-S24" "iPhone-15" "iPad-Air" "Android-dhcp-92" "DESKTOP-R8K291")
+RANDOM_NAME=${NAMES[$RANDOM % ${#NAMES[@]}]}
+
+# 3. Меняем hostname прямо в ядре и в текущем окружении
+sudo hostname "$RANDOM_NAME"
+echo "$RANDOM_NAME" | sudo tee /proc/sys/kernel/hostname > /dev/null
+
+echo -e "\x1b[33m[+] Временное имя устройства:\x1b[0m $(hostname)"
+
+# 4. Меняем MAC-адрес через NetworkManager (чтобы он не сбрасывался обратно)
+ACTIVE_CON=$(sudo nmcli -t -f NAME connection show --active | head -n1)
+
+if [ -n "$ACTIVE_CON" ]; then
+    sudo nmcli connection modify "$ACTIVE_CON" 802-11-wireless.cloned-mac-address random 2>/dev/null
+    sudo nmcli connection modify "$ACTIVE_CON" ipv4.dhcp-hostname "$RANDOM_NAME" 2>/dev/null
+    sudo nmcli connection up "$ACTIVE_CON" > /dev/null 2>&1
+else
+    sudo ip link set dev "$INTERFACE" down
+    sudo macchanger -r "$INTERFACE" > /dev/null
+    sudo ip link set dev "$INTERFACE" up
+fi
+
+echo -e "\x1b[32m[SUCCESS] MAC и Hostname успешно замаскированы!\x1b[0m"

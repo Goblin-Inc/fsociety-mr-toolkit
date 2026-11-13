@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+CLIP_FILE="$HOME/.cache/mr_clipboard.log"
+touch "$CLIP_FILE"
+
+# Получаем текущий буфер
+CURRENT=$(xclip -o -selection clipboard 2>/dev/null)
+
+# Если текущего текста нет в файле — сохраняем
+if [ -n "$CURRENT" ] && ! grep -qxF "$CURRENT" "$CLIP_FILE"; then
+    echo "$CURRENT" >> "$CLIP_FILE"
+fi
+
+# Показываем Rofi меню
+SELECTED=$(tac "$CLIP_FILE" | rofi -dmenu -p "CLIPBOARD" -theme ~/.config/rofi/themes/mrrobot.rasi)
+
+if [ -n "$SELECTED" ]; then
+    echo -n "$SELECTED" | xclip -selection clipboard
+    notify-send "FSOCIETY" "Copied to clipboard!" -i edit-copy
+fi

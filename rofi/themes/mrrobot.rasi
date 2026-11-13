@@ -1,0 +1,80 @@
+* {
+    bg-main:       #080808;
+    bg-surface:    #121212;
+    fg-main:       #D6D6D6;
+    fg-muted:      #666666;
+    accent:        #B00000;
+    accent-bright: #E00000;
+
+    background-color: #080808;
+    text-color:       #D6D6D6;
+}
+
+window {
+    width:            45%;
+    border:           2px;
+    border-color:     #B00000;
+    padding:          15px;
+    background-color: #080808;
+}
+
+mainbox {
+    children:         [ inputbar, listview ];
+    spacing:          10px;
+    background-color: #080808;
+}
+
+inputbar {
+    children:         [ prompt, entry ];
+    background-color: #121212;
+    padding:          8px 12px;
+    border:           1px;
+    border-color:     #222222;
+}
+
+prompt {
+    text-color:       #E00000;
+    background-color: #121212;
+    padding:          0px 8px 0px 0px;
+}
+
+entry {
+    background-color: #121212;
+    text-color:       #D6D6D6;
+    placeholder:      "run command...";
+    placeholder-color: #666666;
+}
+
+listview {
+    lines:            8;
+    columns:          1;
+    fixed-height:     false;
+    spacing:          4px;
+    background-color: #080808;
+}
+
+element {
+    padding:          6px 10px;
+    background-color: #080808;
+    text-color:       #D6D6D6;
+    children:         [ element-icon, element-text ];
+    spacing:          10px;
+}
+
+element selected {
+    background-color: #121212;
+    text-color:       #E00000;
+    border:           0px 0px 0px 3px;
+    border-color:     #E00000;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-alight:  0.5;
+}
+
+element-icon {
+    size:             32px;
+    background-color: transparent;
+}

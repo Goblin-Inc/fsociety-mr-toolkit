@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$DIR"
+FILE="$DIR/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
+
+case "$1" in
+    "area")
+        maim -s "$FILE" && xclip -selection clipboard -t image/png "$FILE" && notify-send "Screenshot" "Area captured to clipboard" -i display
+        ;;
+    "window")
+        maim -i "$(xdotool getactivewindow 2>/dev/null)" "$FILE" && xclip -selection clipboard -t image/png "$FILE" && notify-send "Screenshot" "Window captured to clipboard" -i display
+        ;;
+    "full"|*)
+        maim "$FILE" && xclip -selection clipboard -t image/png "$FILE" && notify-send "Screenshot" "Full screen captured to clipboard" -i display
+        ;;
+esac

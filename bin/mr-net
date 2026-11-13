@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# Проверяем статус Wi-Fi радиомодуля (enabled/disabled)
+WIFI_STATE=$(nmcli radio wifi)
+
+if [ "$WIFI_STATE" = "disabled" ]; then
+    TOGGLE_ITEM="󰤨  Enable Wi-Fi"
+else
+    TOGGLE_ITEM="󰤭  Disable Wi-Fi"
+fi
+
+# Сканируем доступные сети, если Wi-Fi включен
+if [ "$WIFI_STATE" = "enabled" ]; then
+    nmcli dev wifi rescan 2>/dev/null
+    # Форматируем список: SSID, Уровень сигнала, Защита
+    NET_LIST=$(nmcli -f SSID,SIGNAL,SECURITY dev wifi list | sed 1d | grep -v '^--' | awk 'NF {if (!seen[$1]++) print $0}')
+fi
+
+# Собираем меню для Rofi
+MENU_OPTIONS="$TOGGLE_ITEM\n$NET_LIST"
+
+CHOSEN=$(echo -e "$MENU_OPTIONS" | rofi -dmenu -p "WIFI MANAGER" -theme ~/.config/rofi/themes/mrrobot.rasi)
+
+# Если ничего не выбрали — выходим
+[ -z "$CHOSEN" ] && exit 0
+
+# 1. Включение / Выключение Wi-Fi
+if [[ "$CHOSEN" == *"Enable Wi-Fi"* ]]; then
+    nmcli radio wifi on
+    notify-send "NETWORK" "Wi-Fi Enabled"
+    exit 0
+elif [[ "$CHOSEN" == *"Disable Wi-Fi"* ]]; then
+    nmcli radio wifi off
+    notify-send "NETWORK" "Wi-Fi Disabled"
+    exit 0
+fi
+
+# 2. Выделяем SSID сети (учитываем возможные пробелы)
+SSID=$(echo "$CHOSEN" | awk '{print $1}')
+
+# 3. Подключение к выбранной сети
+if [ -n "$SSID" ]; then
+    # Проверяем, требует ли сеть пароль (WPA/WEP/802.1X)
+    if [[ "$CHOSEN" =~ (WPA|WEP|802.1X) ]]; then
+        # Проверяем, есть ли уже сохраненный профиль для этой сети
+        KNOWN_CON=$(nmcli -g NAME connection show | grep -x "$SSID")
+        
+        if [ -n "$KNOWN_CON" ]; then
+            nmcli con up id "$SSID" && notify-send "NETWORK" "Connected to $SSID"
+        else
+            PASS=$(rofi -dmenu -p "Password for $SSID" -password -theme ~/.config/rofi/themes/mrrobot.rasi)
+            if [ -n "$PASS" ]; then
+                nmcli dev wifi connect "$SSID" password "$PASS" && notify-send "NETWORK" "Connected to $SSID"
+            fi
+        fi
+    else
+        nmcli dev wifi connect "$SSID" && notify-send "NETWORK" "Connected to $SSID"
+    fi
+fi

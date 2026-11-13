@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Сохранение текущей громкости перед выходом
+wpctl status > /dev/null
