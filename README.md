@@ -38,3 +38,6 @@ chmod +x ~/.local/bin/mr-* ~/.local/bin/stealth-mode
 cp -r rofi polybar i3 alacritty ~/.config/
 cp -r ascii ~/.mr-ascii
 ```
+
+## 📄 License
+MIT © [Goblin-Inc](https://github.com/Goblin-Inc)
